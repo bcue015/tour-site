@@ -7,7 +7,6 @@ const cssImport = require('postcss-import');
 const browserSync = require('browser-sync').create();
 const mixins = require('postcss-mixins');
 
-
 function style() {
 	return gulp.src('./app/assets/styles/styles.css')
   	.pipe(postcss([cssImport, mixins, cssvars, nested, autoprefixer]))
