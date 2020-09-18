@@ -15,7 +15,9 @@ rev = require('gulp-rev'),
 cssnano = require('gulp-cssnano'),
 uglify = require('gulp-uglify'),
 rename = require('gulp-rename'),
-svgSprite =require('gulp-svg-sprite');
+svgSprite =require('gulp-svg-sprite'),
+svg2png = require('gulp-svg2png'),
+modernizr = require('gulp-modernizr');
 
 gulp.task('styles', function() {
   return gulp.src('./app/assets/styles/styles.css')
@@ -25,8 +27,20 @@ gulp.task('styles', function() {
 });
 
 var config = {
+  shape:  {
+    spacing: {
+      padding: 1
+    }
+  },
   mode: {
     css: {
+      variables: {
+        replaceSvgWithPng: function() {
+          return function(sprite, render) {
+            return render(sprite).split('.svg').join('.png');
+          }
+        }
+      },
       sprite: 'sprite.svg',
       render: {
         css: {
@@ -47,8 +61,14 @@ gulp.task('createSprite', function() {
     .pipe(gulp.dest('./app/temp/sprite/'));
 });
 
+gulp.task('createPngCopy', function() {
+  return gulp.src('./app/temp/sprite/css/*.svg')
+    .pipe(svg2png())
+    .pipe(gulp.dest('./app/temp/sprite/css'));
+});
+
 gulp.task('copySpriteGraphic', function() {
-  return gulp.src('./app/temp/sprite/css/**/*.svg')
+  return gulp.src('./app/temp/sprite/css/**/*.{svg,png}')
   .pipe(gulp.dest('./app/assets/images/sprites'));
 });
 
@@ -60,9 +80,9 @@ gulp.task('copySpriteCSS', function() {
 
 gulp.task('endClean', function() {
   return del('./app/temp/sprite');
-});
+});  
 
-gulp.task('icons', gulp.series('beginClean', 'createSprite', gulp.parallel('copySpriteGraphic','copySpriteCSS'), 'endClean'));
+gulp.task('icons', gulp.series('beginClean', 'createSprite', 'createPngCopy', gulp.parallel('copySpriteGraphic','copySpriteCSS'), 'endClean'));
 
 gulp.task('scripts', function(callback) {
   webpack(require('./webpack.config.js'), function(err, stats) {
@@ -85,7 +105,7 @@ gulp.task('watch', function() {
 
   gulp.watch('./app/index.html').on('change', browserSync.reload);
   gulp.watch('./app/assets/styles/**/*.css', gulp.parallel('waitForStyles'));
-  gulp.watch(['./app/assets/scripts/modules/*.js', './app/assets/scripts/App.js'], gulp.parallel('waitForScripts'));
+  gulp.watch(['./app/assets/scripts/**/*.js'], gulp.parallel('waitForScripts'));
 });
 
 gulp.task('waitForStyles', gulp.series('styles', function() {
@@ -98,8 +118,44 @@ gulp.task('waitForScripts', gulp.series('scripts', function(cb) {
   cb()
 }))
 
+gulp.task('modernizr', function() {
+  return gulp.src(['./app/assets/styles/**/*.css', './app/assets/scripts/**/*.js'])
+    .pipe(modernizr({
+      "options": [
+        "setClasses"
+      ]
+    }))
+    .pipe(gulp.dest('./app/temp/scripts'));
+});
+
+
+// This is for Gulp Build
+
+gulp.task('previewDist', function() {
+  browserSync.init({
+    notify: false,
+    server: {
+      baseDir: "dist"
+    }
+  });
+});
+
 gulp.task('deleteDistFolder', function() {
 	return del("./dist");
+});
+
+gulp.task('copyGeneralFiles', function() {
+  var pathsToCopy = [
+    './app/**/*',
+    '!./app/index.html',
+    '!./app/assets/images/**',
+    '!./app/assets/styles/**',
+    '!./app/assets/scripts/**',
+    '!./app/temp',
+    '!./app/temp/**'
+  ]
+  return gulp.src(pathsToCopy)
+    .pipe(gulp.dest("./dist"));
 });
 
 gulp.task('optimizeImages', function() {
@@ -121,7 +177,7 @@ gulp.task('usemin', function() {
 	.pipe(gulp.dest("./dist"));
 });
 
-gulp.task('build', gulp.series('deleteDistFolder', gulp.parallel('optimizeImages', 'usemin')));
+gulp.task('build', gulp.series('deleteDistFolder', 'copyGeneralFiles', 'icons', 'styles', 'scripts', gulp.parallel('optimizeImages', 'usemin')));
 
 
 
