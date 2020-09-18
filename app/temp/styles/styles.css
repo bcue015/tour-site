@@ -441,16 +441,29 @@ a {
 	}
 
 .btn {
-	background-color: #2f5572;
 	color: white;
 	text-decoration: none;
 	padding: .75rem 1.2rem;
 	display: inline-block;
+	transition: background-color .3s;
+	border-radius: 3px;
 }
+
+.btn--blue {
+		background-color: #2f5572;
+	}
+
+.btn--blue:hover {
+			background-color: #22425b;
+		}
 
 .btn--orange {
 		background-color: #d59541;
 	}
+
+.btn--orange:hover {
+			background-color: #ca7c15;
+		}
 
 .btn--large {
 		padding: 1.1rem 1.9rem;

@@ -1,12 +1,25 @@
 .btn {
-	background-color: $mainBlue;
 	color: white;
 	text-decoration: none;
 	padding: .75rem 1.2rem;
 	display: inline-block;
+	transition: background-color .3s;
+	border-radius: 3px;
+
+	&--blue {
+		background-color: $mainBlue;
+
+		&:hover {
+			background-color: #22425b;
+		}
+	}
 
 	&--orange {
 		background-color: $mainOrange;
+
+		&:hover {
+			background-color: #ca7c15;
+		}
 	}
 
 	&--large {
