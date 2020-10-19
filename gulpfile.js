@@ -37,7 +37,7 @@ var config = {
       variables: {
         replaceSvgWithPng: function() {
           return function(sprite, render) {
-            return render(sprite).split('.svg').join('.png');
+            return render(sprite).split('.svg').join('.png'); 
           }
         }
       },
@@ -103,7 +103,7 @@ gulp.task('watch', function() {
     }
   });
 
-  gulp.watch('./app/index.html').on('change', browserSync.reload);
+  gulp.watch('./app/**/*.html').on('change', browserSync.reload);
   gulp.watch('./app/assets/styles/**/*.css', gulp.parallel('waitForStyles'));
   gulp.watch(['./app/assets/scripts/**/*.js'], gulp.parallel('waitForScripts'));
 });
